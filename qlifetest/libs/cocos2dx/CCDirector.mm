@@ -241,7 +241,8 @@ void CCDirector::setGLDefaultValues(void)
     setProjection(m_eProjection);
 
     // set other opengl default values
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 黑色
+    glClearColor(255.0f, 255.0f, 255.0f, 1.0f);
 }
 
 // Draw the Scene
@@ -288,6 +289,62 @@ void CCDirector::drawScene(void)
 
     m_uTotalFrames++;
 
+    
+    static NSInteger nameCount = 0;
+    if (nameCount<5000)
+    {
+        
+        printf ( "%d\n" , nameCount ) ;
+        
+        int s = 1;
+        UIScreen* screen = [ UIScreen mainScreen ];
+        if ( [ screen respondsToSelector:@selector(scale) ] )
+            s = (int) [ screen scale ];
+        
+        const int w = 480;
+        const int h = 320;
+        const NSInteger myDataLength = w * h * 4 * s * s;
+            // allocate array and read pixels into it.
+        GLubyte *buffer = (GLubyte *) malloc(myDataLength);
+        glReadPixels(0, 0, w*s, h*s, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+            // gl renders "upside down" so swap top to bottom into new array.
+            // there's gotta be a better way, but this works.
+        GLubyte *buffer2 = (GLubyte *) malloc(myDataLength);
+        for(int y = 0; y < h*s; y++)
+        {
+            memcpy( buffer2 + (h*s - 1 - y) * w * 4 * s, buffer + (y * 4 * w * s), w * 4 * s );
+        }
+        free(buffer); // work with the flipped buffer, so get rid of the original one.
+        
+            // make data provider with data.
+        CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, buffer2, myDataLength, NULL);
+            // prep the ingredients
+        int bitsPerComponent = 8;
+        int bitsPerPixel = 32;
+        int bytesPerRow = 4 * w * s;
+        CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+        CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
+        CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+            // make the cgimage
+        CGImageRef imageRef = CGImageCreate(w*s, h*s, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpaceRef, bitmapInfo, provider, NULL, NO, renderingIntent);
+            // then make the uiimage from that
+        UIImage *myImage = [ UIImage imageWithCGImage:imageRef scale:s orientation:UIImageOrientationUp ];
+        
+        NSData *jpegRepresentaion = UIImageJPEGRepresentation(myImage, 1.0);
+        NSString *docDir = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+        
+        NSString *fileName = [NSString stringWithFormat:@"%d.jpg",nameCount];
+        NSString *savePath = [docDir stringByAppendingPathComponent:fileName];
+        BOOL writeSucc = [jpegRepresentaion writeToFile:savePath atomically:NO];
+        
+            //    UIImageWriteToSavedPhotosAlbum( myImage, nil, nil, nil );
+        CGImageRelease( imageRef );
+        CGDataProviderRelease(provider);
+        CGColorSpaceRelease(colorSpaceRef);
+        free(buffer2);
+        nameCount++;
+    }
+    
     // swap buffers
     if (m_pobOpenGLView)
     {

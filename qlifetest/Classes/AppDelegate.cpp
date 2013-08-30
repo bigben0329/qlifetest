@@ -11,7 +11,9 @@
 #include "cocos2d.h"
 #include "SimpleAudioEngine.h"
 #include "HelloWorldScene.h"
-
+#include "onePScene.h"
+#include "twoPScene.h"
+#include "threePScene.h"
 USING_NS_CC;
 using namespace CocosDenshion;
 
@@ -31,13 +33,13 @@ bool AppDelegate::applicationDidFinishLaunching()
     pDirector->setOpenGLView(CCEGLView::sharedOpenGLView());
 
     // turn on display FPS
-    pDirector->setDisplayStats(true);
+    //pDirector->setDisplayStats(true);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     pDirector->setAnimationInterval(1.0 / 60);
 
     // create a scene. it's an autorelease object
-    CCScene *pScene = HelloWorld::scene();
+    CCScene *pScene = onePScene::scene(0);
 
     // run
     pDirector->runWithScene(pScene);
