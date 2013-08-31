@@ -93,14 +93,22 @@ bool onePScene::init()
     CCCallFuncN *cfn = CCCallFuncN::create(this, callfuncN_selector(onePScene::changeScene));
     
     if ( oneimgid != 21 )
+    {
         cfn = CCCallFuncN::create(this, callfuncN_selector(onePScene::changeScene));
+    }
     else
+    {
         cfn = CCCallFuncN::create(this, callfuncN_selector(onePScene::endScene));
+    }
     
     if ( oneimgid != 21 )
+    {
         act = CCSequence::create(act1,cfn,NULL);
+    }
     else
+    {
         act = CCSequence::create(act1,CCFadeOut::create(1.5f),cfn,NULL);
+    }
     
     sp->runAction(act);
     this->addChild(sp);
